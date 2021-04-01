@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio_store
+    command: server /export
+    expose:
+      - 9000
+    volumes:
+    - minio_data:/export
+    environment:
+      MINIO_ACCESS_KEY: FOCGte7yh0KKGqoYp82J
+      MINIO_SECRET_KEY: GTQexqGSEbFRv/CeZ3lAm/WB7D62oM45iLnxr0oe
+
+  db:
+    image: postgres:13.2
+    environment:
+      POSTGRES_DB: image_store
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - 5432:5432
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - .env.dev
+    volumes:
+      - ./:/usr/src/app
+    depends_on:
+      - db
+      - minio
+    ports:
+       - 8000:8000
+
+volumes:
+  db_data:
+  minio_data:

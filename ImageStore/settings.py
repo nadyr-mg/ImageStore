@@ -9,6 +9,8 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
+from datetime import timedelta
+
 import environ
 from pathlib import Path
 
@@ -16,7 +18,6 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env()
-env.read_env(BASE_DIR('.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -39,6 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'minio_storage',
 
     'core.apps.CoreConfig',
 ]
@@ -119,3 +122,17 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
 STATIC_URL = '/static/'
+
+# Minio settings
+DEFAULT_FILE_STORAGE = 'minio_storage.storage.MinioMediaStorage'
+
+MINIO_STORAGE_ENDPOINT = env('MINIO_STORAGE_ENDPOINT')
+MINIO_STORAGE_ACCESS_KEY = env('MINIO_STORAGE_ACCESS_KEY')
+MINIO_STORAGE_SECRET_KEY = env('MINIO_STORAGE_SECRET_KEY')
+
+MINIO_STORAGE_USE_HTTPS = False
+MINIO_STORAGE_MEDIA_BUCKET_NAME = 'media'
+MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET = True
+
+MEDIA_UPLOAD_URL_EXPIRES = timedelta(minutes=1)
+MEDIA_DOWNLOAD_TTL = timedelta(minutes=10)
