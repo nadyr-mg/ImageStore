@@ -5,13 +5,12 @@ services:
     image: minio/minio:latest
     container_name: minio_store
     command: server /export
-    expose:
-      - 9000
+    ports:
+      - 9000:9000
     volumes:
     - minio_data:/export
-    environment:
-      MINIO_ACCESS_KEY: FOCGte7yh0KKGqoYp82J
-      MINIO_SECRET_KEY: GTQexqGSEbFRv/CeZ3lAm/WB7D62oM45iLnxr0oe
+    env_file:
+      - .env.dev
 
   db:
     image: postgres:13.2
