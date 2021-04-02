@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from django.forms import model_to_dict
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -59,7 +59,6 @@ class CommonTestCase(TestCase):
             return response
 
 
-@override_settings(DEFAULT_FILE_STORAGE='django.core.files.storage.FileSystemStorage')
 class ImageCreationTestCase(CommonTestCase):
     def test_create_valid(self):
         response = self.upload_image(self.valid_image_path)

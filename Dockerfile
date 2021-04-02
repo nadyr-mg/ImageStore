@@ -8,7 +8,8 @@ COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 COPY ./entrypoint.sh .
+RUN ["chmod", "+x", "/usr/src/app/entrypoint.sh"]
 
 COPY . .
 
-CMD ["/usr/src/app/entrypoint.sh"]
+ENTRYPOINT ["sh", "/usr/src/app/entrypoint.sh"]
