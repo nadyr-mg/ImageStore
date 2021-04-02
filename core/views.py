@@ -1,9 +1,10 @@
 from django.http import FileResponse
-from rest_framework import mixins
+from rest_framework import mixins, status
+from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.parsers import FormParser
 from rest_framework.response import Response
+from rest_framework.status import HTTP_501_NOT_IMPLEMENTED
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.generics import RetrieveAPIView
 
 from core.models import Image, Annotation
 from core.serializers import ImageSerializer, AnnotationSerializer
@@ -31,13 +32,10 @@ class ImageView(mixins.CreateModelMixin,
         return response
 
 
-class AnnotationView(mixins.RetrieveModelMixin,
-                     GenericViewSet):
+class AnnotationView(RetrieveUpdateAPIView):
     queryset = Annotation.objects.all()
     lookup_field = 'image__file'
     serializer_class = AnnotationSerializer
 
-    def get_serializer(self, *args, **kwargs):
-        serializer_class = self.get_serializer_class()
-        kwargs.setdefault('context', self.get_serializer_context())
-        return serializer_class(*args, **kwargs)
+    def patch(self, request, *args, **kwargs):
+        return Response(status=status.HTTP_501_NOT_IMPLEMENTED)
