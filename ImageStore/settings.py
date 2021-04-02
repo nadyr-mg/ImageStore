@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
+    'rest_framework',
     'minio_storage',
 
     'core.apps.CoreConfig',
@@ -136,3 +137,7 @@ MINIO_STORAGE_AUTO_CREATE_MEDIA_BUCKET = True
 
 MEDIA_UPLOAD_URL_EXPIRES = timedelta(minutes=1)
 MEDIA_DOWNLOAD_TTL = timedelta(minutes=10)
+
+REST_FRAMEWORK = {
+    'URL_FORMAT_OVERRIDE': None,
+}

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from django.utils.text import get_valid_filename
 from rest_framework import serializers
 from django.db import transaction
@@ -5,13 +7,42 @@ from django.db import transaction
 from core.models import Image, Annotation, Label
 
 
+class PassSerializerContextMixin:
+
+    def get_fields(self):
+        """
+        Override get_fields() method to pass context to nested serializers.
+        """
+        fields = super().get_fields()
+
+        # Cause fields with this same base class to inherit self._context
+        for field_name, field in fields.items():
+            if isinstance(field, serializers.ListSerializer):
+                fields[field_name].child._context = self._context
+
+        return fields
+
+
 class LabelSerializer(serializers.ModelSerializer):
+    EXPORT_FORMAT_KEY = 'export'
+
     id = serializers.UUIDField(required=False)
     annotation_id = serializers.IntegerField(required=False, write_only=True)
 
     class Meta:
         model = Label
         fields = ['annotation_id', 'id', 'class_id', 'surface', 'shape', 'meta']
+        export_fields = ['id', 'class_id', 'surface']
+
+    def to_representation(self, instance):
+        result = super().to_representation(instance)
+
+        format_param = self.context['request'].query_params.get('format', '')
+        if format_param.lower() == self.EXPORT_FORMAT_KEY:
+            result = OrderedDict((key, result[key]) for key in result if key in self.Meta.export_fields)
+            result['surface'] = ''.join(result['surface'])
+
+        return result
 
     def validate_id(self, id_):
         if Label.objects.filter(id=id_).exists():
@@ -19,7 +50,7 @@ class LabelSerializer(serializers.ModelSerializer):
         return id_
 
 
-class AnnotationSerializer(serializers.ModelSerializer):
+class AnnotationSerializer(PassSerializerContextMixin, serializers.ModelSerializer):
     image_id = serializers.IntegerField(required=False, write_only=True)
     labels = LabelSerializer(required=False, many=True)
 
@@ -47,7 +78,7 @@ class ImageSerializer(serializers.ModelSerializer):
     SUPPORTED_FORMATS = ['JPEG', 'PNG', 'TIFF']
     FILE_MAX_SIZE = 20 * 1024 * 1024  # in MB
 
-    annotation = AnnotationSerializer(write_only=True, required=False)
+    annotation = AnnotationSerializer(required=False)
 
     class Meta:
         model = Image
@@ -60,6 +91,9 @@ class ImageSerializer(serializers.ModelSerializer):
                 data[key] = val[0]  # unpack data from multipart format
 
         return super().to_internal_value(data)
+
+    def to_representation(self, instance):
+        return {'id': instance.file.name}
 
     def validate_file(self, file):
         filename = get_valid_filename(file.name)
@@ -75,16 +109,13 @@ class ImageSerializer(serializers.ModelSerializer):
 
         return file
 
-    def to_representation(self, instance):
-        return {'id': instance.file.name}
-
     @transaction.atomic
     def create(self, validated_data):
         annotation_data = validated_data.pop('annotation', None)
         image = super().create(validated_data)
 
         if annotation_data:
-            annotation_data['image_id'] = image.id
+            annotation_data['image_id'] = image.file.name
             serializer = AnnotationSerializer(data=annotation_data)
             serializer.is_valid(raise_exception=True)
             serializer.save()

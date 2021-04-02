@@ -4,7 +4,7 @@ from django.http import QueryDict
 from rest_framework import parsers
 
 
-class MultipartAnnotationParser(parsers.MultiPartParser):
+class MultipartJsonParser(parsers.MultiPartParser):
 
     def parse(self, stream, media_type=None, parser_context=None):
         result = super().parse(
