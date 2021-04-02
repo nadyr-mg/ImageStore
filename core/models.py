@@ -11,9 +11,9 @@ class Image(models.Model):
         return self.file.name
 
 
-# this model is small, but it will be easy to extend it if the need will arise
+# this model seems redundant, but it allows us to easily extend annotation fields if it'll be needed
 class Annotation(models.Model):
-    image = models.OneToOneField(Image, blank=True, null=True, on_delete=models.CASCADE)
+    image = models.OneToOneField(Image, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'Annotation #{self.image_id}'
