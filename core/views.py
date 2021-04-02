@@ -3,7 +3,6 @@ from rest_framework import mixins, status
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.parsers import FormParser
 from rest_framework.response import Response
-from rest_framework.status import HTTP_501_NOT_IMPLEMENTED
 from rest_framework.viewsets import GenericViewSet
 
 from core.models import Image, Annotation
@@ -27,7 +26,7 @@ class ImageView(mixins.CreateModelMixin,
         extension = instance.file.name.rpartition('.')[2] or '*'
         response = FileResponse(file_handle, content_type=f'image/{extension}')
         response['Content-Length'] = instance.file.size
-        response['Content-Disposition'] = 'attachment; filename="%s"' % instance.file.name
+        response['Content-Disposition'] = f'attachment; filename="{instance.file.name}"'
 
         return response
 
