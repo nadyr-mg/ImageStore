@@ -1,3 +1,8 @@
+## About
+A service for storing images with annotations. Features:
+1. Uploading and downloading of files
+1. Annotations updating and retrieving (in 2 formats)
+
 ## Start
 Run `docker-compose up`
 
@@ -110,7 +115,7 @@ Use parameter `format` for different representations. `format=export` shows only
 
 + Request
         
-        GET /api/v1/images/sample.jpg/annotation/
+        GET /api/v1/images/sample.jpg/annotation/?format=export
        
 + Response 200
 
